@@ -3,6 +3,8 @@ The Project
 
 Display events of Tyria on a map. Both the map and the events come from GW2 API : https://forum-en.guildwars2.com/forum/community/api/API-Documentation
 
+Events are not working right now. It'll be developed in the future.
+
 Copyright
 ========
 
