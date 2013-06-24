@@ -1,6 +1,5 @@
 $(function(){
 
-<<<<<<< HEAD
 Map = function(item_handler) {
 	console.log('Map object.');
 	this.map; // The leaflet map
@@ -8,16 +7,6 @@ Map = function(item_handler) {
 	this.item_handler = item_handler; // Class that handles items on the map (names, regions, sectors, ...)
 
 	this.markerLayer; // Markers for the events
-=======
-Map = function() {
-	console.log('Map object.');
-	this.map; // The leaflet map
-	this.regions; // Regions on the map
-	this.map_names = [];
-	this.markers_region_array = [];
-	this.markers_maps_array = [];
-	this.markers_sector_array = [];
->>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 }
 
 // Create and show the map
@@ -47,7 +36,6 @@ Map.prototype.initMap = function() {
 	// Get regions infos
 	var _this = this;
 	$.getJSON('https://api.guildwars2.com/v1/map_floor.json?continent_id=1&floor=1', function(data){
-<<<<<<< HEAD
 		_this.item_handler.setRegions(data.regions); // Put them in the handler
 
 		// Get maps names
@@ -68,23 +56,6 @@ Map.prototype.initMap = function() {
 		});
 	});
 }
-=======
-		_this.regions = data.regions;
-		// Get maps names
-		$.getJSON('https://api.guildwars2.com/v1/map_names.json', function(data){
-			$(data).each(function(i) {
-				_this.map_names.push(data[i]['name']);
-			});
-
-
-			// Continue the story
-			_this.map.addLayer(layer);
-			return _this.showNames();
-		});
-	});
-
-};
->>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 
 // Show names of regions, maps on the global map
 Map.prototype.showNames = function() {
@@ -92,27 +63,10 @@ Map.prototype.showNames = function() {
 	_this = this; // Cool thing, avoid insane Object-ception for the developer :/
 	var marker, displayed_sectors = [];
 
-<<<<<<< HEAD
 	for (var region in this.item_handler.regions) {
 		region = this.item_handler.regions[region];
 		createMarker('region_name', region['name'], unproject(region['label_coord'], this.map), this.map);
 
-=======
-	for (var region in this.regions) {
-		region = this.regions[region];
-
-		// Display text
-		var region_text = L.divIcon({
-			className: 'region_name',
-			html: region['name']
-		});
-		marker = L.marker(unproject(region['label_coord'], this.map), {icon: region_text});
-		this.markers_region_array.push({
-			'name': region['name'],
-			'marker': marker
-		});
-		marker.addTo(this.map);
->>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 
 		// Init maps for the region
 		for (var game_map in region.maps) {
@@ -120,30 +74,11 @@ Map.prototype.showNames = function() {
 
 			// The API gives also names of 'scenario' maps like 'The Scene of the Crime' in Lion's Arch.
 			// So, we don't display them by checking if they are in the map_names.json file
-<<<<<<< HEAD
 			if ( isIn(game_map['name'], this.item_handler.getMapsNames()) ) {
 				var bounds_sw = unproject(game_map['continent_rect'][0], this.map); 
 				var bounds_ne = unproject(game_map['continent_rect'][1], this.map);
 				var dim = new L.latLngBounds(bounds_sw, bounds_ne) ; // Dimensions of the map
 				createMarker('gamemap_name', game_map['name'], dim.getCenter(), this.map);
-=======
-			if ( isIn(game_map['name'], this.map_names) ) {
-				// Text
-				var gamemap_text = L.divIcon({
-					className: 'gamemap_name',
-					html: game_map['name']
-				});
-				// Area
-				var bounds_sw = unproject(game_map['continent_rect'][0], this.map); 
-				var bounds_ne = unproject(game_map['continent_rect'][1], this.map);
-				var dim = new L.latLngBounds(bounds_sw, bounds_ne) ; // Dimensions of the map
-				marker = L.marker(dim.getCenter(), {icon: gamemap_text}); // Center the text
-				this.markers_maps_array.push({
-					'name': game_map['name'],
-					'marker': marker
-				});
-				marker.addTo(this.map);
->>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 				$('.gamemap_name').css('visibility', 'hidden'); // We hide it for the suprise if we zoom
 			}
 
@@ -154,21 +89,7 @@ Map.prototype.showNames = function() {
 				// Sometimes, there are repeated sectors for personal story maps. We just have to check 
 				// if the sector is already displayed.
 				if(!isIn(sector['name'], displayed_sectors)) {
-<<<<<<< HEAD
 					createMarker('sector_name', sector['name'], unproject(sector['coord'], this.map), this.map);
-=======
-					// Text
-					var sector_text = L.divIcon({
-						className: 'sector_name',
-						html: sector['name']
-					});
-					marker = L.marker(unproject(sector['coord'], this.map), {icon: sector_text});
-					this.markers_sector_array.push({
-						'name': sector['name'],
-						'marker': marker
-					});
-					marker.addTo(this.map);
->>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 					$('.sector_name').css('visibility', 'hidden'); // Same logic as gamemap's
 
 					// Finally, add to the list
@@ -198,11 +119,7 @@ Map.prototype.zoomHandler = function() {
 			$('.region_name').css('visibility', 'visible');
 		}
 
-<<<<<<< HEAD
 		// Maps : Queensdale, Caledon Forest, ...
-=======
-		// Maps : Queens Dale, Caledon Forest, ...
->>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 		if(_this.map.getZoom() > 3 && _this.map.getZoom() <= 5) {
 			$('.gamemap_name').css('visibility', 'visible');
 		}
@@ -218,18 +135,14 @@ Map.prototype.zoomHandler = function() {
 			$('.sector_name').css('visibility', 'hidden');
 		}
 	});
-<<<<<<< HEAD
 
 	this.map.on('click', function(e){
 		console.log('click on : ', e.latlng.toString());
 	});
-=======
->>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 }
 
 // Show events on the map
 Map.prototype.showEvents = function(events) {
-<<<<<<< HEAD
 	
 	if(this.markerLayer) this.markerLayer.clearLayers(); // Clear the map before
 
@@ -281,63 +194,6 @@ Map.prototype.showEvents = function(events) {
 	this.markerLayer = L.layerGroup(markers_array);
 	this.map.addLayer(this.markerLayer);
 		
-=======
-
-	/*
-	var rect, area, dim;
-	// Style
-	var rect_style = {
-		color: "grey",
-		fill: true,
-		fillOpacity: 0.2
-	}
-	// Map
-	var map = this.map;
-	$.getJSON('areas.json', function(data){
-		$(data).each(function(iter) {
-			// data[iter] : area
-			area = data[iter];
-			// Dimension
-			dim = new L.latLngBounds(L.latLng(area['swLat'], area['swLng']), L.latLng(area['neLat'], area['neLng']));
-			// Add each area with a rectangle
-			rect = new L.rectangle(dim, rect_style);
-			// Add some cool stuff here
-			var marker = L.marker(dim.getCenter()).addTo(map);
-			marker.on('click', function(e) {
-				// Show events : marker.bindPopup('Hello !').openPopup();
-				// data[iter]['id'] and events[it][3] for the IDs
-				event_on_map_html = ''; // Html to show
-				$(events).each(function(it) {
-					// If the event is on the map
-					if (events[it][3] ==  data[iter]['id']) { // Check if the event is on the map
-						// Check if the event is active and the option is checked
-						if(events[it][1] == 'Active' && $('#active_events').is(':checked')) {
-							event_on_map_html += '<span class=\'event_active\'>'+events[it][0]+'</span><br/>';
-						}
-						// Same for warmup
-						else if(events[it][1] == 'Warmup' && $('#warmup_events').is(':checked')) {
-							event_on_map_html += '<span class=\'event_warmup\'>'+events[it][0]+'</span><br/>';
-						}
-						// Same for success, fail & preparation
-						else if(events[it][1] == 'Success' && $('#succeeded_events').is(':checked')) {
-							event_on_map_html += '<span class=\'event_success\'>'+events[it][0]+'</span><br/>';
-						}
-						else if(events[it][1] == 'Fail' && $('#failed_events').is(':checked')) {
-							event_on_map_html += '<span class=\'event_fail\'>'+events[it][0]+'</span><br/>';
-						}
-						else if(events[it][1] == 'Preparation' && $('#preparation_events').is(':checked')) {
-							event_on_map_html += '<span class=\'event_preparation\'>'+events[it][0]+'</span><br/>';
-						}
-					}
-				});
-				marker.bindPopup(event_on_map_html).openPopup();
-			});
-			// Add the rectangle to the map
-			rect.addTo(map);
-		});
-	});*/
-	
->>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 }
 
 // Need to change the form of the coords
@@ -345,7 +201,6 @@ function unproject(coords, map) {
 	return map.unproject(coords, map.getMaxZoom());
 }
 
-<<<<<<< HEAD
 // Create a marker : className, name, coords, map
 function createMarker(html_class_name, html_name, coords, on_this_map) {
 	// Text displayed
@@ -356,14 +211,6 @@ function createMarker(html_class_name, html_name, coords, on_this_map) {
 	// Create the marker
 	var marker = L.marker(coords, {icon: icon_text});
 	return marker.addTo(on_this_map);
-=======
-// Useful
-function isIn(element, array) {
-	for(var it=0; it<array.length; it++) {
-		if (array[it] == element) return true;
-	}
-	return false;
->>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 }
 
 });
