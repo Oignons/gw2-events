@@ -69,7 +69,8 @@ body {
 	bottom: 0px;
 	position: fixed;
 	z-index: 42;
-	min-height: 25px;
+	min-height: 15px;
+	height: 15px;
 	width: 100%;
 	padding-top: 10px;
 	padding-bottom: 10px;
