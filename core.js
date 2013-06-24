@@ -17,8 +17,11 @@ $(function(){
 				i++;
 			});
 
-			//Display the map
-			gw2map = new Map();
+			// Create the handler
+			var items_handler = new Item_handler();
+
+			// Display the map
+			gw2map = new Map(items_handler);
 			gw2map.initMap();
 	});
 
@@ -35,4 +38,12 @@ function load_events() {
 		// Display on the screen
 		gw2map.showEvents(events_list);
 	});
+}
+
+// Useful
+function isIn(element, array) {
+	for(var it=0; it<array.length; it++) {
+		if (array[it] == element) return true;
+	}
+	return false;
 }
