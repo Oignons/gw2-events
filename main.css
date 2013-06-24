@@ -69,8 +69,12 @@ body {
 	bottom: 0px;
 	position: fixed;
 	z-index: 42;
+<<<<<<< HEAD
 	min-height: 15px;
 	height: 15px;
+=======
+	min-height: 25px;
+>>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 	width: 100%;
 	padding-top: 10px;
 	padding-bottom: 10px;

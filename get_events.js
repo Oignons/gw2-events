@@ -27,7 +27,11 @@ function get_gw2_events(world_id, callback) {
 			get_gw2_infos(url_map_names, maps, function() {
 
 				var request = url_events + '?world_id=' + world_id;
+<<<<<<< HEAD
 				var events_on_world = {};
+=======
+				var events_on_world = [];
+>>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 
 				$.getJSON(request, function(data) {
 
@@ -36,6 +40,7 @@ function get_gw2_events(world_id, callback) {
 					map_id = data['events'][i]['map_id'];
 					event_name = get_matching_name(data['events'][i]['event_id'], events);
 					event_status = data['events'][i]['state'];
+<<<<<<< HEAD
 					event_id = data['events'][i]['event_id'];
 					
 					events_on_world[event_id] = {
@@ -45,6 +50,11 @@ function get_gw2_events(world_id, callback) {
 						'map_name': map_name,
 						'map_id': map_id
 					};
+=======
+
+					events_on_world.push( [event_name, event_status, map_name, map_id] );
+					i++;
+>>>>>>> f53ea3071d0ba9b54db6aacf4e10881427829850
 				});
 							
 				// Finally return the events
