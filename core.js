@@ -16,20 +16,21 @@ $(function(){
 				$('#servers_list').append('<option value='+data[i]['id']+'>'+data[i]['name']+'</option>')
 				i++;
 			});
+
+			//Display the map
+			gw2map = new Map();
+			gw2map.initMap();
 	});
 
-	//Display the map
-	gw2map = new Map();
-	gw2map.initMap();
 });
 
 function load_events() {
 	// Display events 
 	get_gw2_events($('#servers_list').find(':selected').val(), function(events_list) {
-		var results_html = "";
+		/*var results_html = "";
 		for(var i=0; i<events_list.length; i++) {
 			results_html += '<br/>'+events_list[i][1]+' : On '+events_list[i][2]+' : '+events_list[i][0];
-		}
+		}*/
 
 		// Display on the screen
 		gw2map.showEvents(events_list);
