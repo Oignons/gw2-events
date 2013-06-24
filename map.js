@@ -133,10 +133,45 @@ Map.prototype.zoomHandler = function() {
 			$('.sector_name').css('visibility', 'hidden');
 		}
 	});
+
+	this.map.on('click', function(e){
+		console.log('click on : ', e.latlng.toString());
+	});
 }
 
 // Show events on the map
 Map.prototype.showEvents = function(events) {
+	
+	// events  : event_id, event_name, event_status, map_name, map_id
+	var markers_array = [];
+	// Iteration over all the event and computing :)
+	for(var event_obj in this.item_handler.events_infos) {
+		event_id = event_obj; // Id of the event
+		event_obj = this.item_handler.events_infos[event_obj]; // Datas about the event
+		// Get infos about the map where the event is
+		map_event = this.item_handler.main_maps[this.item_handler.getMapName(event_obj['map_id'])];
+		
+		// Compute the location, simple algebra
+		event_center_x = event_obj['location']['center'][0];
+		event_center_y = event_obj['location']['center'][1];
+		
+		percentageX = (event_center_x - map_event['map_rect'][0][0]) / (map_event['map_rect'][1][0] - map_event['map_rect'][0][0]);
+		percentageY = 1-(event_center_y - map_event['map_rect'][0][1]) / (map_event['map_rect'][1][1] - map_event['map_rect'][0][1]);
+		continentX = (map_event['continent_rect'][0][0] + (map_event['continent_rect'][1][0] - map_event['continent_rect'][0][0]) * percentageX);
+		continentY = (map_event['continent_rect'][0][1] + (map_event['continent_rect'][1][1] - map_event['continent_rect'][0][1]) * percentageY);
+
+
+		event_coords = unproject([continentX, continentY], this.map); // Finally : the coords for the event
+
+		// Create a marker
+		// if the event is active
+		if(events[event_id]['event_status'] == 'Active') {
+			markers_array.push(L.marker(event_coords).bindPopup('<span class=\'event_active\'>'+event_obj['name']+'</span>'));
+		}
+	}
+	var events_on_map = L.layerGroup(markers_array);
+	this.map.addLayer(events_on_map);
+	
 
 	/*
 	var rect, area, dim;
