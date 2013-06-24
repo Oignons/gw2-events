@@ -1,11 +1,10 @@
 $(function(){
 
-Map = function() {
+Map = function(item_handler) {
 	console.log('Map object.');
 	this.map; // The leaflet map
-	this.regions; // Regions on the map
-	this.map_names = []; // Array with all the names of the maps ingame
-	this.maps_infos = []; // Array to stock map_rect and continent_rect
+
+	this.item_handler = item_handler; // Class that handles items on the map (names, regions, sectors, ...)
 }
 
 // Create and show the map
@@ -35,37 +34,26 @@ Map.prototype.initMap = function() {
 	// Get regions infos
 	var _this = this;
 	$.getJSON('https://api.guildwars2.com/v1/map_floor.json?continent_id=1&floor=1', function(data){
-		_this.regions = data.regions;
+		_this.item_handler.setRegions(data.regions); // Put them in the handler
 
 		// Get maps names
 		$.getJSON('https://api.guildwars2.com/v1/map_names.json', function(data){
-			$(data).each(function(i) {
-				_this.map_names.push(data[i]['name']); // Push the names
-			});
+			_this.item_handler.initMainMaps(data); // Init the handler with these maps
+
+			// Now, we can send everything to the handler, it'll sort the datas and only keep the
+			// main maps infos
 
 			// Get maps infos
 			$.getJSON('https://api.guildwars2.com/v1/maps.json', function(data){
-				for(var element in data.maps) {
-					element = data.maps[element];
-					// Check if the map is in map_names (otherwise, it's an instance, useless for events)
-					// And get the map_id for it (as they only give us a 'region_id')
-					if( isIn(element['map_name'], _this.map_names) ){
-						_this.maps_infos.push({
-							//'map_id': ,
-							'map_rect': element['map_rect'],
-							'continent_rect': element['continent_rect']
-						});
-					}
-				}
-
-				// Continue the story
+				_this.item_handler.initRect(data); // The handler just get the infos it wants about the main maps
+			
+				// Continue the story, the app is not finished to be loaded
 				_this.map.addLayer(layer);
 				return _this.showNames();
 			});
 		});
 	});
-
-};
+}
 
 // Show names of regions, maps on the global map
 Map.prototype.showNames = function() {
@@ -73,8 +61,8 @@ Map.prototype.showNames = function() {
 	_this = this; // Cool thing, avoid insane Object-ception for the developer :/
 	var marker, displayed_sectors = [];
 
-	for (var region in this.regions) {
-		region = this.regions[region];
+	for (var region in this.item_handler.regions) {
+		region = this.item_handler.regions[region];
 		createMarker('region_name', region['name'], unproject(region['label_coord'], this.map), this.map);
 
 
@@ -84,7 +72,7 @@ Map.prototype.showNames = function() {
 
 			// The API gives also names of 'scenario' maps like 'The Scene of the Crime' in Lion's Arch.
 			// So, we don't display them by checking if they are in the map_names.json file
-			if ( isIn(game_map['name'], this.map_names) ) {
+			if ( isIn(game_map['name'], this.item_handler.getMapsNames()) ) {
 				var bounds_sw = unproject(game_map['continent_rect'][0], this.map); 
 				var bounds_ne = unproject(game_map['continent_rect'][1], this.map);
 				var dim = new L.latLngBounds(bounds_sw, bounds_ne) ; // Dimensions of the map
@@ -129,7 +117,7 @@ Map.prototype.zoomHandler = function() {
 			$('.region_name').css('visibility', 'visible');
 		}
 
-		// Maps : Queens Dale, Caledon Forest, ...
+		// Maps : Queensdale, Caledon Forest, ...
 		if(_this.map.getZoom() > 3 && _this.map.getZoom() <= 5) {
 			$('.gamemap_name').css('visibility', 'visible');
 		}
@@ -209,14 +197,6 @@ Map.prototype.showEvents = function(events) {
 // Need to change the form of the coords
 function unproject(coords, map) {
 	return map.unproject(coords, map.getMaxZoom());
-}
-
-// Useful
-function isIn(element, array) {
-	for(var it=0; it<array.length; it++) {
-		if (array[it] == element) return true;
-	}
-	return false;
 }
 
 // Create a marker : className, name, coords, map
