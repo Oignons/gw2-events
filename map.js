@@ -5,6 +5,8 @@ Map = function(item_handler) {
 	this.map; // The leaflet map
 
 	this.item_handler = item_handler; // Class that handles items on the map (names, regions, sectors, ...)
+
+	this.markerLayer; // Markers for the events
 }
 
 // Create and show the map
@@ -142,6 +144,13 @@ Map.prototype.zoomHandler = function() {
 // Show events on the map
 Map.prototype.showEvents = function(events) {
 	
+	if(this.markerLayer) this.markerLayer.clearLayers(); // Clear the map before
+
+	var custom_icon = L.icon({
+		iconUrl: './imgs/event.png',
+		popupAnchor: [10, 10]
+	});
+
 	// events  : event_id, event_name, event_status, map_name, map_id
 	var markers_array = [];
 	// Iteration over all the event and computing :)
@@ -164,69 +173,27 @@ Map.prototype.showEvents = function(events) {
 		event_coords = unproject([continentX, continentY], this.map); // Finally : the coords for the event
 
 		// Create a marker
-		// if the event is active
-		if(events[event_id]['event_status'] == 'Active') {
-			markers_array.push(L.marker(event_coords).bindPopup('<span class=\'event_active\'>'+event_obj['name']+'</span>'));
+
+		// if the event is *** and the option *** is checked
+		if(events[event_id]['event_status'] == 'Active' && $('#active_events').is(':checked')) {
+			markers_array.push(L.marker(event_coords, {icon: custom_icon}).bindPopup('<span class=\'event_active\'>'+event_obj['name']+'</span>'));
+		}
+		else if(events[event_id]['event_status'] == 'Warmup' && $('#warmup_events').is(':checked')) {
+			markers_array.push(L.marker(event_coords, {icon: custom_icon}, {icon: custom_icon}).bindPopup('<span class=\'event_warmup\'>'+event_obj['name']+'</span>'));
+		}
+		else if(events[event_id]['event_status'] == 'Success' && $('#succeeded_events').is(':checked')) {
+			markers_array.push(L.marker(event_coords, {icon: custom_icon}).bindPopup('<span class=\'event_success\'>'+event_obj['name']+'</span>'));
+		}
+		else if(events[event_id]['event_status'] == 'Fail' && $('#failed_events').is(':checked')) {
+			markers_array.push(L.marker(event_coords, {icon: custom_icon}).bindPopup('<span class=\'event_fail\'>'+event_obj['name']+'</span>'));
+		}
+		else if(events[event_id]['event_status'] == 'Preparation' && $('#preparation_events').is(':checked')) {
+			markers_array.push(L.marker(event_coords, {icon: custom_icon}).bindPopup('<span class=\'event_preparation\'>'+event_obj['name']+'</span>'));
 		}
 	}
-	var events_on_map = L.layerGroup(markers_array);
-	this.map.addLayer(events_on_map);
-	
-
-	/*
-	var rect, area, dim;
-	// Style
-	var rect_style = {
-		color: "grey",
-		fill: true,
-		fillOpacity: 0.2
-	}
-	// Map
-	var map = this.map;
-	$.getJSON('areas.json', function(data){
-		$(data).each(function(iter) {
-			// data[iter] : area
-			area = data[iter];
-			// Dimension
-			dim = new L.latLngBounds(L.latLng(area['swLat'], area['swLng']), L.latLng(area['neLat'], area['neLng']));
-			// Add each area with a rectangle
-			rect = new L.rectangle(dim, rect_style);
-			// Add some cool stuff here
-			var marker = L.marker(dim.getCenter()).addTo(map);
-			marker.on('click', function(e) {
-				// Show events : marker.bindPopup('Hello !').openPopup();
-				// data[iter]['id'] and events[it][3] for the IDs
-				event_on_map_html = ''; // Html to show
-				$(events).each(function(it) {
-					// If the event is on the map
-					if (events[it][3] ==  data[iter]['id']) { // Check if the event is on the map
-						// Check if the event is active and the option is checked
-						if(events[it][1] == 'Active' && $('#active_events').is(':checked')) {
-							event_on_map_html += '<span class=\'event_active\'>'+events[it][0]+'</span><br/>';
-						}
-						// Same for warmup
-						else if(events[it][1] == 'Warmup' && $('#warmup_events').is(':checked')) {
-							event_on_map_html += '<span class=\'event_warmup\'>'+events[it][0]+'</span><br/>';
-						}
-						// Same for success, fail & preparation
-						else if(events[it][1] == 'Success' && $('#succeeded_events').is(':checked')) {
-							event_on_map_html += '<span class=\'event_success\'>'+events[it][0]+'</span><br/>';
-						}
-						else if(events[it][1] == 'Fail' && $('#failed_events').is(':checked')) {
-							event_on_map_html += '<span class=\'event_fail\'>'+events[it][0]+'</span><br/>';
-						}
-						else if(events[it][1] == 'Preparation' && $('#preparation_events').is(':checked')) {
-							event_on_map_html += '<span class=\'event_preparation\'>'+events[it][0]+'</span><br/>';
-						}
-					}
-				});
-				marker.bindPopup(event_on_map_html).openPopup();
-			});
-			// Add the rectangle to the map
-			rect.addTo(map);
-		});
-	});*/
-	
+	this.markerLayer = L.layerGroup(markers_array);
+	this.map.addLayer(this.markerLayer);
+		
 }
 
 // Need to change the form of the coords
