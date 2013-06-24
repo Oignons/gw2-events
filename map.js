@@ -4,10 +4,8 @@ Map = function() {
 	console.log('Map object.');
 	this.map; // The leaflet map
 	this.regions; // Regions on the map
-	this.map_names = [];
-	this.markers_region_array = [];
-	this.markers_maps_array = [];
-	this.markers_sector_array = [];
+	this.map_names = []; // Array with all the names of the maps ingame
+	this.maps_infos = []; // Array to stock map_rect and continent_rect
 }
 
 // Create and show the map
@@ -38,16 +36,32 @@ Map.prototype.initMap = function() {
 	var _this = this;
 	$.getJSON('https://api.guildwars2.com/v1/map_floor.json?continent_id=1&floor=1', function(data){
 		_this.regions = data.regions;
+
 		// Get maps names
 		$.getJSON('https://api.guildwars2.com/v1/map_names.json', function(data){
 			$(data).each(function(i) {
-				_this.map_names.push(data[i]['name']);
+				_this.map_names.push(data[i]['name']); // Push the names
 			});
 
+			// Get maps infos
+			$.getJSON('https://api.guildwars2.com/v1/maps.json', function(data){
+				for(var element in data.maps) {
+					element = data.maps[element];
+					// Check if the map is in map_names (otherwise, it's an instance, useless for events)
+					// And get the map_id for it (as they only give us a 'region_id')
+					if( isIn(element['map_name'], _this.map_names) ){
+						_this.maps_infos.push({
+							//'map_id': ,
+							'map_rect': element['map_rect'],
+							'continent_rect': element['continent_rect']
+						});
+					}
+				}
 
-			// Continue the story
-			_this.map.addLayer(layer);
-			return _this.showNames();
+				// Continue the story
+				_this.map.addLayer(layer);
+				return _this.showNames();
+			});
 		});
 	});
 
@@ -61,18 +75,8 @@ Map.prototype.showNames = function() {
 
 	for (var region in this.regions) {
 		region = this.regions[region];
+		createMarker('region_name', region['name'], unproject(region['label_coord'], this.map), this.map);
 
-		// Display text
-		var region_text = L.divIcon({
-			className: 'region_name',
-			html: region['name']
-		});
-		marker = L.marker(unproject(region['label_coord'], this.map), {icon: region_text});
-		this.markers_region_array.push({
-			'name': region['name'],
-			'marker': marker
-		});
-		marker.addTo(this.map);
 
 		// Init maps for the region
 		for (var game_map in region.maps) {
@@ -81,21 +85,10 @@ Map.prototype.showNames = function() {
 			// The API gives also names of 'scenario' maps like 'The Scene of the Crime' in Lion's Arch.
 			// So, we don't display them by checking if they are in the map_names.json file
 			if ( isIn(game_map['name'], this.map_names) ) {
-				// Text
-				var gamemap_text = L.divIcon({
-					className: 'gamemap_name',
-					html: game_map['name']
-				});
-				// Area
 				var bounds_sw = unproject(game_map['continent_rect'][0], this.map); 
 				var bounds_ne = unproject(game_map['continent_rect'][1], this.map);
 				var dim = new L.latLngBounds(bounds_sw, bounds_ne) ; // Dimensions of the map
-				marker = L.marker(dim.getCenter(), {icon: gamemap_text}); // Center the text
-				this.markers_maps_array.push({
-					'name': game_map['name'],
-					'marker': marker
-				});
-				marker.addTo(this.map);
+				createMarker('gamemap_name', game_map['name'], dim.getCenter(), this.map);
 				$('.gamemap_name').css('visibility', 'hidden'); // We hide it for the suprise if we zoom
 			}
 
@@ -106,17 +99,7 @@ Map.prototype.showNames = function() {
 				// Sometimes, there are repeated sectors for personal story maps. We just have to check 
 				// if the sector is already displayed.
 				if(!isIn(sector['name'], displayed_sectors)) {
-					// Text
-					var sector_text = L.divIcon({
-						className: 'sector_name',
-						html: sector['name']
-					});
-					marker = L.marker(unproject(sector['coord'], this.map), {icon: sector_text});
-					this.markers_sector_array.push({
-						'name': sector['name'],
-						'marker': marker
-					});
-					marker.addTo(this.map);
+					createMarker('sector_name', sector['name'], unproject(sector['coord'], this.map), this.map);
 					$('.sector_name').css('visibility', 'hidden'); // Same logic as gamemap's
 
 					// Finally, add to the list
@@ -234,6 +217,18 @@ function isIn(element, array) {
 		if (array[it] == element) return true;
 	}
 	return false;
+}
+
+// Create a marker : className, name, coords, map
+function createMarker(html_class_name, html_name, coords, on_this_map) {
+	// Text displayed
+	var icon_text = L.divIcon({
+		className: html_class_name,
+		html: html_name
+	});
+	// Create the marker
+	var marker = L.marker(coords, {icon: icon_text});
+	return marker.addTo(on_this_map);
 }
 
 });
