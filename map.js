@@ -7,6 +7,12 @@ Map = function(item_handler) {
 	this.item_handler = item_handler; // Class that handles items on the map (names, regions, sectors, ...)
 
 	this.markerLayer; // Markers for the events
+
+	// Icons for the events
+	this.custom_icons = [], event_states = ['active', 'warmup', 'success', 'fail', 'preparation'];
+	for(var i=0; i<event_states.length; i++) {
+		this.custom_icons.push( createCustomIcon(event_states[i]) );
+	}
 }
 
 // Create and show the map
@@ -60,8 +66,7 @@ Map.prototype.initMap = function() {
 // Show names of regions, maps on the global map
 Map.prototype.showNames = function() {
 
-	_this = this; // Cool thing, avoid insane Object-ception for the developer :/
-	var marker, displayed_sectors = [];
+	var displayed_sectors = [];
 
 	for (var region in this.item_handler.regions) {
 		region = this.item_handler.regions[region];
@@ -102,7 +107,7 @@ Map.prototype.showNames = function() {
 	// We also can delete the loading gif
 	$('#loadinggif').remove();
 
-	return this.zoomHandler();
+	return this.zoomHandler(); // Continue
 }
 
 // Regulate display of names
@@ -127,17 +132,13 @@ Map.prototype.zoomHandler = function() {
 			$('.gamemap_name').css('visibility', 'hidden');
 		}
 
-		// Sectors : Trader's Forum, Troll's Teeth
+		// Sectors : Trader's Forum, Troll's Teeth, ...
 		if(_this.map.getZoom() > 5) {
 			$('.sector_name').css('visibility', 'visible');
 		}
 		else if(_this.map.getZoom() <= 5) {
 			$('.sector_name').css('visibility', 'hidden');
 		}
-	});
-
-	this.map.on('click', function(e){
-		console.log('click on : ', e.latlng.toString());
 	});
 }
 
@@ -146,15 +147,11 @@ Map.prototype.showEvents = function(events) {
 	
 	if(this.markerLayer) this.markerLayer.clearLayers(); // Clear the map before
 
-	var icon_active = createCustomIcon('active'),
-		icon_warmup = createCustomIcon('warmup'),
-		icon_success = createCustomIcon('success'),
-		icon_fail = createCustomIcon('fail'),
-		icon_preparation = createCustomIcon('preparation');
-
 	// events  : event_id, event_name, event_status, map_name, map_id
-	var markers_array = [];
-	// Iteration over all the event and computing :)
+
+	var markers_array = []; // All the markers here
+
+	// Iteration over all the events and computing :)
 	for(var event_obj in this.item_handler.events_infos) {
 		event_id = event_obj; // Id of the event
 		event_obj = this.item_handler.events_infos[event_obj]; // Datas about the event
@@ -175,21 +172,21 @@ Map.prototype.showEvents = function(events) {
 
 		// Create a marker
 
-		// if the event is *** and the option *** is checked
+		// if the event is *var* and the option *var* is checked
 		if(events[event_id]['event_status'] == 'Active' && $('#active_events').is(':checked')) {
-			markers_array.push(L.marker(event_coords, {icon: icon_active}).bindPopup('<span class=\'event_active\'>'+event_obj['name']+'</span>'));
+			markers_array.push(L.marker(event_coords, {icon: this.custom_icons[0]}).bindPopup('<span class=\'event_active\'>'+event_obj['name']+'</span>'));
 		}
 		else if(events[event_id]['event_status'] == 'Warmup' && $('#warmup_events').is(':checked')) {
-			markers_array.push(L.marker(event_coords, {icon: icon_warmup}).bindPopup('<span class=\'event_warmup\'>'+event_obj['name']+'</span>'));
+			markers_array.push(L.marker(event_coords, {icon: this.custom_icons[1]}).bindPopup('<span class=\'event_warmup\'>'+event_obj['name']+'</span>'));
 		}
 		else if(events[event_id]['event_status'] == 'Success' && $('#succeeded_events').is(':checked')) {
-			markers_array.push(L.marker(event_coords, {icon: icon_success}).bindPopup('<span class=\'event_success\'>'+event_obj['name']+'</span>'));
+			markers_array.push(L.marker(event_coords, {icon: this.custom_icons[2]}).bindPopup('<span class=\'event_success\'>'+event_obj['name']+'</span>'));
 		}
 		else if(events[event_id]['event_status'] == 'Fail' && $('#failed_events').is(':checked')) {
-			markers_array.push(L.marker(event_coords, {icon: icon_fail}).bindPopup('<span class=\'event_fail\'>'+event_obj['name']+'</span>'));
+			markers_array.push(L.marker(event_coords, {icon: this.custom_icons[3]}).bindPopup('<span class=\'event_fail\'>'+event_obj['name']+'</span>'));
 		}
 		else if(events[event_id]['event_status'] == 'Preparation' && $('#preparation_events').is(':checked')) {
-			markers_array.push(L.marker(event_coords, {icon: icon_preparation}).bindPopup('<span class=\'event_preparation\'>'+event_obj['name']+'</span>'));
+			markers_array.push(L.marker(event_coords, {icon: this.custom_icons[4]}).bindPopup('<span class=\'event_preparation\'>'+event_obj['name']+'</span>'));
 		}
 	}
 	this.markerLayer = L.layerGroup(markers_array);
@@ -214,12 +211,13 @@ function createMarker(html_class_name, html_name, coords, on_this_map) {
 	return marker.addTo(on_this_map);
 }
 
+// Return the icon with the special image
 function createCustomIcon(state) {
-	if (state == 'active') return L.icon({iconUrl: './imgs/event_active.png', popupAnchor:[10,10]});
-	else if(state == 'warmup') return L.icon({iconUrl: './imgs/event_warmup.png', popupAnchor:[10,10]});
-	else if(state == 'success') return L.icon({iconUrl: './imgs/event_success.png', popupAnchor:[10,10]});
-	else if(state == 'fail') return L.icon({iconUrl: './imgs/event_fail.png', popupAnchor:[10,10]});
-	else if(state == 'preparation') return L.icon({iconUrl: './imgs/event_preparation.png', popupAnchor:[10,10]});
+	// Files are : event_*.png, with * : warmup, active, fail, success, preparation
+	return L.icon({
+		iconUrl: './imgs/event_'+state+'.png',
+		popupAnchor: [10, 10]
+	});
 }
 
 });
