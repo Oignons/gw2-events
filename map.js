@@ -146,10 +146,11 @@ Map.prototype.showEvents = function(events) {
 	
 	if(this.markerLayer) this.markerLayer.clearLayers(); // Clear the map before
 
-	var custom_icon = L.icon({
-		iconUrl: './imgs/event.png',
-		popupAnchor: [10, 10]
-	});
+	var icon_active = createCustomIcon('active'),
+		icon_warmup = createCustomIcon('warmup'),
+		icon_success = createCustomIcon('success'),
+		icon_fail = createCustomIcon('fail'),
+		icon_preparation = createCustomIcon('preparation');
 
 	// events  : event_id, event_name, event_status, map_name, map_id
 	var markers_array = [];
@@ -176,19 +177,19 @@ Map.prototype.showEvents = function(events) {
 
 		// if the event is *** and the option *** is checked
 		if(events[event_id]['event_status'] == 'Active' && $('#active_events').is(':checked')) {
-			markers_array.push(L.marker(event_coords, {icon: custom_icon}).bindPopup('<span class=\'event_active\'>'+event_obj['name']+'</span>'));
+			markers_array.push(L.marker(event_coords, {icon: icon_active}).bindPopup('<span class=\'event_active\'>'+event_obj['name']+'</span>'));
 		}
 		else if(events[event_id]['event_status'] == 'Warmup' && $('#warmup_events').is(':checked')) {
-			markers_array.push(L.marker(event_coords, {icon: custom_icon}, {icon: custom_icon}).bindPopup('<span class=\'event_warmup\'>'+event_obj['name']+'</span>'));
+			markers_array.push(L.marker(event_coords, {icon: icon_warmup}).bindPopup('<span class=\'event_warmup\'>'+event_obj['name']+'</span>'));
 		}
 		else if(events[event_id]['event_status'] == 'Success' && $('#succeeded_events').is(':checked')) {
-			markers_array.push(L.marker(event_coords, {icon: custom_icon}).bindPopup('<span class=\'event_success\'>'+event_obj['name']+'</span>'));
+			markers_array.push(L.marker(event_coords, {icon: icon_success}).bindPopup('<span class=\'event_success\'>'+event_obj['name']+'</span>'));
 		}
 		else if(events[event_id]['event_status'] == 'Fail' && $('#failed_events').is(':checked')) {
-			markers_array.push(L.marker(event_coords, {icon: custom_icon}).bindPopup('<span class=\'event_fail\'>'+event_obj['name']+'</span>'));
+			markers_array.push(L.marker(event_coords, {icon: icon_fail}).bindPopup('<span class=\'event_fail\'>'+event_obj['name']+'</span>'));
 		}
 		else if(events[event_id]['event_status'] == 'Preparation' && $('#preparation_events').is(':checked')) {
-			markers_array.push(L.marker(event_coords, {icon: custom_icon}).bindPopup('<span class=\'event_preparation\'>'+event_obj['name']+'</span>'));
+			markers_array.push(L.marker(event_coords, {icon: icon_preparation}).bindPopup('<span class=\'event_preparation\'>'+event_obj['name']+'</span>'));
 		}
 	}
 	this.markerLayer = L.layerGroup(markers_array);
@@ -211,6 +212,14 @@ function createMarker(html_class_name, html_name, coords, on_this_map) {
 	// Create the marker
 	var marker = L.marker(coords, {icon: icon_text});
 	return marker.addTo(on_this_map);
+}
+
+function createCustomIcon(state) {
+	if (state == 'active') return L.icon({iconUrl: './imgs/event_active.png', popupAnchor:[10,10]});
+	else if(state == 'warmup') return L.icon({iconUrl: './imgs/event_warmup.png', popupAnchor:[10,10]});
+	else if(state == 'success') return L.icon({iconUrl: './imgs/event_success.png', popupAnchor:[10,10]});
+	else if(state == 'fail') return L.icon({iconUrl: './imgs/event_fail.png', popupAnchor:[10,10]});
+	else if(state == 'preparation') return L.icon({iconUrl: './imgs/event_preparation.png', popupAnchor:[10,10]});
 }
 
 });
