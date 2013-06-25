@@ -52,7 +52,7 @@ Item_handler.prototype.getMapsNames = function() {
 	return this.main_maps_names;
 }
 
-// Events part
+// Events part, called by core.js
 Item_handler.prototype.initEventsInfos = function(infos) {
 	this.events_infos = infos['events'];
 }
